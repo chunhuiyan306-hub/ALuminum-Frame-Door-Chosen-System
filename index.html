@@ -2,31 +2,35 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gainer SKU 配置系统 (Code视觉前置版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gainer SKU 配置系统 (Mobile自适应版)</title>
     <style>
+        /* 增加全局边界盒模型，彻底解决手机端宽度溢出问题 */
+        * { box-sizing: border-box; }
+        
         :root { --primary: #1a252f; --accent: #2980b9; --bg: #f4f7f6; --card: #ffffff; --border: #bdc3c7; }
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg); margin: 0; display: flex; height: 100vh; color: #333; overflow: hidden; }
         
+        /* 桌面端默认布局 */
         .left-panel { width: 55%; background: var(--card); padding: 30px; overflow-y: auto; border-right: 1px solid var(--border); box-shadow: 2px 0 15px rgba(0,0,0,0.05); position: relative;}
         .right-panel { width: 45%; background: #2c3e50; color: #ecf0f1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
         
         .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 20px;}
-        h2 { color: var(--primary); margin: 0;}
+        h2 { color: var(--primary); margin: 0; font-size: 22px;}
         .right-panel h2 { color: #fff; border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin:0 0 20px 0;}
         
-        .btn-lang { background: #f39c12; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-lang { background: #f39c12; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); white-space: nowrap;}
         .btn-lang:hover { background: #e67e22; transform: scale(1.05); }
 
-        .step-box { background: #f8f9fa; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; transition: 0.3s; }
+        .step-box { background: #f8f9fa; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; transition: 0.3s; width: 100%;}
         .step-box.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(100%); }
         .step-title { font-weight: bold; font-size: 16px; margin-bottom: 15px; color: var(--primary); }
         
-        select, input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; margin-bottom: 10px; background: #fff; outline:none; font-family: monospace, sans-serif;}
+        select, input[type="text"] { width: 100%; padding: 12px 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; margin-bottom: 10px; background: #fff; outline:none; font-family: monospace, sans-serif; appearance: auto;}
         select:focus { border-color: var(--accent); }
         
         .radio-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
-        .radio-group label { background: #fff; border: 1px solid var(--border); padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; transition: 0.2s; flex: 1; text-align: center; }
+        .radio-group label { background: #fff; border: 1px solid var(--border); padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; transition: 0.2s; flex: 1; text-align: center; min-width: 30%;}
         .radio-group input[type="radio"] { display: none; }
         .radio-group input[type="radio"]:checked + label { background: var(--accent); color: white; border-color: var(--accent); font-weight: bold; }
 
@@ -46,16 +50,45 @@
         .btn-delete:hover { background: #c0392b; }
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 📱 手机端/移动端自适应核心代码 (Media Queries) 📱 */
+        @media screen and (max-width: 850px) {
+            body { 
+                flex-direction: column; /* 变上下结构 */
+                height: auto; /* 解除高度限制 */
+                overflow-y: auto; /* 允许整页滑动 */
+            }
+            .left-panel { 
+                width: 100%; /* 占满屏幕 */
+                border-right: none; 
+                padding: 15px; /* 减小内边距 */
+                overflow-y: visible; /* 释放滚动条 */
+            }
+            .right-panel { 
+                width: 100%; /* 占满屏幕 */
+                padding: 20px 15px; 
+                overflow-y: visible; 
+                min-height: 50vh; /* 保证底部清单有足够高度 */
+            }
+            .action-group { 
+                flex-direction: column; /* 手机上按钮变成上下两个，更好按 */
+            }
+            .header-container { 
+                align-items: flex-start; /* 标题和按钮在窄屏下更好排列 */
+            }
+            h2 { font-size: 18px; }
+            .radio-group label { font-size: 13px; padding: 10px 5px;}
+        }
     </style>
 </head>
 <body>
 
     <div class="left-panel">
         <div class="header-container">
-            <h2 id="ui_main_title">🛠️ Gainer 产品配置引擎</h2>
+            <h2 id="ui_main_title">🛠️ Gainer 配置引擎</h2>
             <button class="btn-lang" id="btn_lang" onclick="toggleLang()">🌐 English</button>
         </div>
-        <p id="ui_sub_title" style="color: #7f8c8d; font-size: 14px; margin-bottom: 25px;">[Code前置版] - 方便海外客户核对色卡与样板编号。</p>
+        <p id="ui_sub_title" style="color: #7f8c8d; font-size: 13px; margin-bottom: 20px;">[Code前置版] 互斥规则生效中。</p>
 
         <div class="step-box" id="step1">
             <div class="step-title" id="ui_step1">1. 选择框架型号 (18款)</div>
@@ -63,11 +96,11 @@
         </div>
 
         <div class="step-box disabled" id="step2">
-            <div class="step-title" id="ui_step2">2. 选择表面工艺与颜色 (绝对互斥)</div>
+            <div class="step-title" id="ui_step2">2. 选择表面工艺与颜色 </div>
             <div class="radio-group" onchange="updateColors()">
-                <input type="radio" id="f_ano" name="finish_type" value="anodized"><label for="f_ano" id="ui_r_ano">氧化 (13色)</label>
-                <input type="radio" id="f_ps" name="finish_type" value="powder_skin"><label for="f_ps" id="ui_r_ps">喷油·肤感 (13色)</label>
-                <input type="radio" id="f_pm" name="finish_type" value="powder_metal"><label for="f_pm" id="ui_r_pm">喷油·金属 (26色)</label>
+                <input type="radio" id="f_ano" name="finish_type" value="anodized"><label for="f_ano" id="ui_r_ano">氧化(13色)</label>
+                <input type="radio" id="f_ps" name="finish_type" value="powder_skin"><label for="f_ps" id="ui_r_ps">肤感(13色)</label>
+                <input type="radio" id="f_pm" name="finish_type" value="powder_metal"><label for="f_pm" id="ui_r_pm">金属(26色)</label>
             </div>
             <select id="sel_color" disabled onchange="unlockStep3()">
                 <option value="" id="ui_opt_color">-- 请先选择上方工艺大类 --</option>
@@ -75,12 +108,12 @@
         </div>
 
         <div class="step-box disabled" id="step3">
-            <div class="step-title" id="ui_step3">3. 选择门芯填充物大类 (绝对互斥)</div>
+            <div class="step-title" id="ui_step3">3. 选择门芯填充物大类 </div>
             <div class="radio-group" onchange="showInfillDetails()">
-                <input type="radio" id="i_glass" name="infill_type" value="glass"><label for="i_glass" id="ui_r_glass">玻璃 (44款)</label>
-                <input type="radio" id="i_wood" name="infill_type" value="wood"><label for="i_wood" id="ui_r_wood">木板 (15款)</label>
-                <input type="radio" id="i_leather" name="infill_type" value="leather"><label for="i_leather" id="ui_r_leather">皮革 (13款)</label>
-                <input type="radio" id="i_rock" name="infill_type" value="rock"><label for="i_rock" id="ui_r_rock">岩板 (23款)</label>
+                <input type="radio" id="i_glass" name="infill_type" value="glass"><label for="i_glass" id="ui_r_glass">玻璃</label>
+                <input type="radio" id="i_wood" name="infill_type" value="wood"><label for="i_wood" id="ui_r_wood">木板</label>
+                <input type="radio" id="i_leather" name="infill_type" value="leather"><label for="i_leather" id="ui_r_leather">皮革</label>
+                <input type="radio" id="i_rock" name="infill_type" value="rock"><label for="i_rock" id="ui_r_rock">岩板</label>
             </div>
 
             <div id="panel_glass" class="dynamic-section">
@@ -127,46 +160,46 @@
         </div>
 
         <div class="action-group">
-            <button class="btn-generate" id="ui_btn_gen" onclick="generateSKU()">➕ 生成专属 SKU (并自动清空表单)</button>
+            <button class="btn-generate" id="ui_btn_gen" onclick="generateSKU()">➕ 生成专属 SKU</button>
             <button class="btn-reset" id="ui_btn_reset" onclick="resetForm(true)">🔄 清空重置</button>
         </div>
     </div>
 
     <div class="right-panel">
         <h2 id="ui_cart_title">📋 客户配置报价清单</h2>
-        <p id="ui_cart_sub" style="font-size: 13px; color: #95a5a6; margin-bottom: 20px;">配置好的参数都在这里。发给工厂或客户绝不会乱。</p>
+        <p id="ui_cart_sub" style="font-size: 13px; color: #95a5a6; margin-bottom: 20px;">配置好的参数都在这里，向下滚动查看。</p>
         
         <div id="cart_container">
-            <p id="empty_cart" style="color: #7f8c8d; text-align: center; margin-top: 50px;">清单空空如也。请在左侧开始您的配置。</p>
+            <p id="empty_cart" style="color: #7f8c8d; text-align: center; margin-top: 50px;">清单空空如也。请在上方开始您的配置。</p>
         </div>
     </div>
 
 <script>
     const i18n = {
         zh: {
-            title: "🛠️ Gainer 产品配置引擎", sub: "[Code前置版] - 方便海外客户核对色卡与样板编号。",
+            title: "🛠️ Gainer 配置引擎", sub: "[Code前置版] 互斥规则生效中。",
             s1: "1. 选择框架型号 (18款)", s2: "2. 选择表面工艺与颜色 (绝对互斥)", s3: "3. 选择门芯填充物大类 (绝对互斥)", s4: "4. 选择五金配件 (把手与铰链)",
-            r_ano: "氧化 (13色)", r_ps: "喷油·肤感 (13色)", r_pm: "喷油·金属 (26色)",
-            r_glass: "玻璃 (44款)", r_wood: "木板 (15款)", r_leather: "皮革 (13款)", r_rock: "岩板 (23款)",
+            r_ano: "氧化(13色)", r_ps: "肤感(13色)", r_pm: "金属(26色)",
+            r_glass: "玻璃", r_wood: "木板", r_leather: "皮革", r_rock: "岩板",
             l_glass1: "选择玻璃类型 (核对Code)：", l_glass2: "选择厚度参数 (必选)：", l_glass3: "是否需要丝印？",
             l_wood1: "选择木板色号 (核对Code)：", l_wood2: "选择木板厚度：", l_lea1: "选择皮号 (核对Code)：", l_lea2: "皮革厚度 (固定)：",
             l_rock1: "选择岩板花色 (核对Code)：", l_rock2: "选择岩板厚度：", l_handle: "选择拉手款式 (核对Code)：", l_hinge: "选择铰链类型 (核对Code)：",
-            btn_gen: "➕ 生成专属 SKU (并自动清空表单)", btn_reset: "🔄 清空重置",
-            cart_title: "📋 客户配置报价清单", cart_sub: "配置好的参数都在这里。发给工厂或客户绝不会乱。", empty: "清单空空如也。请在左侧开始您的配置。",
-            alert_hw: "请选择拉手和铰链！", del_btn: "❌ 删除记录", 
+            btn_gen: "➕ 生成专属 SKU", btn_reset: "🔄 清空重置",
+            cart_title: "📋 客户配置报价清单", cart_sub: "配置好的参数都在这里，向下滚动查看。", empty: "清单空空如也。请在上方开始您的配置。",
+            alert_hw: "请选择拉手和铰链！", del_btn: "❌ 删除", 
             hw_desc: "五金", g_desc: "玻璃", p_desc: "工艺", t_desc: "厚度", s_desc: "丝印", w_desc: "木板 | 色号", l_desc: "皮革 | 皮号", r_desc: "岩板 | 花色"
         },
         en: {
-            title: "🛠️ Gainer Product Configurator", sub: "[Code-First Version] - Easily match hardware/color sample codes.",
+            title: "🛠️ Gainer Configurator", sub: "[Code-First] Rules active.",
             s1: "1. Select Frame Model", s2: "2. Select Finish & Color (Exclusive)", s3: "3. Select Infill Material (Exclusive)", s4: "4. Select Hardware (Handle & Hinge)",
-            r_ano: "Anodized (13)", r_ps: "Powder Skin (13)", r_pm: "Powder Metal (26)",
-            r_glass: "Glass (44)", r_wood: "Wood (15)", r_leather: "Leather (13)", r_rock: "Stone (23)",
+            r_ano: "Anodized (13)", r_ps: "Skin-feel (13)", r_pm: "Metallic (26)",
+            r_glass: "Glass", r_wood: "Wood", r_leather: "Leather", r_rock: "Stone",
             l_glass1: "Select Glass Type (Match Code):", l_glass2: "Select Thickness:", l_glass3: "Require Silk-screen?",
             l_wood1: "Select Wood Code:", l_wood2: "Select Wood Thickness:", l_lea1: "Select Leather Code:", l_lea2: "Leather Thickness (Fixed):",
             l_rock1: "Select Stone Pattern:", l_rock2: "Select Stone Thickness:", l_handle: "Select Handle Style (Match Code):", l_hinge: "Select Hinge Type (Match Code):",
-            btn_gen: "➕ Generate SKU (Auto-Resets Form)", btn_reset: "🔄 Reset Form",
-            cart_title: "📋 Client Quote List", cart_sub: "All configured items are stored here. Unique SKUs ready for factory scheduling.", empty: "Cart is empty. Please configure on the left.",
-            alert_hw: "Please select both Handle and Hinge!", del_btn: "❌ Delete", 
+            btn_gen: "➕ Generate SKU", btn_reset: "🔄 Reset",
+            cart_title: "📋 Client Quote List", cart_sub: "All configured items are stored here. Scroll down to view.", empty: "Cart is empty. Please configure above.",
+            alert_hw: "Please select both Handle and Hinge!", del_btn: "❌ Del", 
             hw_desc: "Hardware", g_desc: "Glass", p_desc: "Process", t_desc: "Thickness", s_desc: "Silk-screen", w_desc: "Wood | Code", l_desc: "Leather | Code", r_desc: "Stone | Pattern"
         }
     };
@@ -187,14 +220,14 @@
       },
       "hardware": {
         "handles": [
-            {zh: "MK097 (内嵌)", en: "MK097 (Integrated)", code: "HD-MK097"}, {zh: "铣型拉手 (CNC)", en: "CNC Milled Handle", code: "HD-CNC"}, {zh: "内嵌拉手", en: "Integrated Handle", code: "HD-INT"},
-            {zh: "隐门一体拉手", en: "Hidden Integrated", code: "HD-INV"}, {zh: "EM962E_128", en: "EM962E_128", code: "HD-EM962"}, {zh: "GNN2769A", en: "GNN2769A", code: "HD-GNN"},
+            {zh: "MK097(内嵌)", en: "MK097(Int)", code: "HD-MK097"}, {zh: "铣型拉手(CNC)", en: "CNC Milled", code: "HD-CNC"}, {zh: "内嵌拉手", en: "Integrated", code: "HD-INT"},
+            {zh: "隐门一体拉手", en: "Hidden Int", code: "HD-INV"}, {zh: "EM962E_128", en: "EM962E_128", code: "HD-EM962"}, {zh: "GNN2769A", en: "GNN2769A", code: "HD-GNN"},
             {zh: "GM072-2-1", en: "GM072-2-1", code: "HD-072"}, {zh: "GM094-2-C1L", en: "GM094-2-C1L", code: "HD-094"}
         ],
         "hinges": [
-            {zh: "JL002 天地铰链", en: "JL002 Pivot Hinge", code: "HG-JL002"}, {zh: "JL006 天地铰链", en: "JL006 Pivot Hinge", code: "HG-JL006"}, {zh: "A款针式封盖", en: "Type A Pin Hinge", code: "HG-A21"},
-            {zh: "Sensys 8638i 隐藏快装", en: "Sensys 8638i Concealed", code: "HG-SEN"}, {zh: "百隆110°快装", en: "Blum 110° Quick-fit", code: "HG-BLUM"}, {zh: "RY-ZSJL-F2 针式金属", en: "RY-ZSJL-F2 Metal Pin", code: "HG-RYF2"},
-            {zh: "RY-ZSJL-G 针式", en: "RY-ZSJL-G Pin", code: "HG-RYG"}, {zh: "萨丽奇CQ暗藏", en: "Salice CQ Concealed", code: "HG-SLCQ"}
+            {zh: "JL002 天地铰链", en: "JL002 Pivot", code: "HG-JL002"}, {zh: "JL006 天地铰链", en: "JL006 Pivot", code: "HG-JL006"}, {zh: "A款针式封盖", en: "TypeA Pin", code: "HG-A21"},
+            {zh: "Sensys 8638i 隐藏快装", en: "Sensys 8638i", code: "HG-SEN"}, {zh: "百隆110°快装", en: "Blum 110°", code: "HG-BLUM"}, {zh: "RY-ZSJL-F2 针式金属", en: "RY-ZSJL-F2 Pin", code: "HG-RYF2"},
+            {zh: "RY-ZSJL-G 针式", en: "RY-ZSJL-G Pin", code: "HG-RYG"}, {zh: "萨丽奇CQ暗藏", en: "Salice CQ", code: "HG-SLCQ"}
         ]
       }
     };
@@ -233,7 +266,6 @@
         updateHardwareDropdowns();
     }
 
-    // ⭐ 最关键的修改：五金把手和铰链，Code 前置 ⭐
     function updateHardwareDropdowns() {
         const hSel = document.getElementById('sel_handle');
         hSel.innerHTML = '<option value="">-- ' + (lang==='zh'?'选择拉手款式':'Select Handle') + ' --</option>';
@@ -272,7 +304,6 @@
         document.getElementById('ui_btn_gen').innerText = t.btn_gen; document.getElementById('ui_btn_reset').innerText = t.btn_reset;
         document.getElementById('ui_cart_title').innerText = t.cart_title; document.getElementById('ui_cart_sub').innerText = t.cart_sub;
         
-        // ⭐ 无缝切换：记录当前选择，重新渲染文本后恢复选择 ⭐
         let fVal = document.getElementById('sel_frame').value;
         let gVal = document.getElementById('glass_type').value; let wVal = document.getElementById('wood_type').value;
         let lVal = document.getElementById('leather_type').value; let rVal = document.getElementById('rock_type').value;
@@ -297,7 +328,6 @@
 
     function unlockStep2() { if(document.getElementById('sel_frame').value) document.getElementById('step2').classList.remove('disabled'); }
     
-    // ⭐ 颜色 Code 前置 ⭐
     function updateColors() {
         const type = document.querySelector('input[name="finish_type"]:checked').value;
         const colorSel = document.getElementById('sel_color');
@@ -405,7 +435,7 @@
 
         cartList.push({ sku: finalSKU, desc: finalDesc, id: Date.now() });
         renderCart();
-        resetForm(false); // 成功后一键清空左侧
+        resetForm(false); 
     }
 
     function renderCart() {
