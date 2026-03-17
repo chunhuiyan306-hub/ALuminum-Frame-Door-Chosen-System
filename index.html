@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gainer 铝框门 SKU 精准配置系统</title>
+    <title>Gainer 铝框门 SKU 全数据精准配置系统</title>
     <style>
-        :root { --primary: #1a252f; --accent: #e67e22; --bg: #ecf0f1; --card: #ffffff; --border: #bdc3c7; }
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg); margin: 0; display: flex; height: 100vh; color: #333; }
+        :root { --primary: #1a252f; --accent: #2980b9; --bg: #f4f7f6; --card: #ffffff; --border: #bdc3c7; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg); margin: 0; display: flex; height: 100vh; color: #333; overflow: hidden; }
         
         /* 布局规划 */
         .left-panel { width: 55%; background: var(--card); padding: 30px; overflow-y: auto; border-right: 1px solid var(--border); box-shadow: 2px 0 15px rgba(0,0,0,0.05); }
@@ -20,7 +20,7 @@
         .step-box.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(100%); }
         .step-title { font-weight: bold; font-size: 16px; margin-bottom: 15px; color: var(--primary); }
         
-        select, input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; margin-bottom: 10px; }
+        select, input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; margin-bottom: 10px; background: #fff;}
         
         /* 互斥单选按钮 (Radio Buttons) 的美化 */
         .radio-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
@@ -33,14 +33,14 @@
         .dynamic-section.active { display: block; animation: fadeIn 0.3s ease-in; }
         
         /* 按钮 */
-        .btn-generate { background: var(--primary); color: white; border: none; padding: 15px; width: 100%; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; margin-top: 20px;}
+        .btn-generate { background: var(--primary); color: white; border: none; padding: 15px; width: 100%; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; margin-top: 10px;}
         .btn-generate:hover { background: #34495e; }
         
         /* 右侧清单样式 */
         .cart-item { background: #34495e; border-left: 5px solid var(--accent); padding: 15px; margin-bottom: 15px; border-radius: 4px; position: relative; }
-        .cart-item .sku-code { font-family: 'Consolas', monospace; font-size: 18px; color: #f1c40f; margin-bottom: 8px; font-weight: bold; word-break: break-all;}
-        .cart-item .sku-desc { font-size: 14px; color: #bdc3c7; line-height: 1.5; }
-        .btn-delete { position: absolute; top: 15px; right: 15px; background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; }
+        .cart-item .sku-code { font-family: 'Consolas', monospace; font-size: 17px; color: #f1c40f; margin-bottom: 10px; font-weight: bold; word-break: break-all; padding-right: 80px;}
+        .cart-item .sku-desc { font-size: 14px; color: #bdc3c7; line-height: 1.6; }
+        .btn-delete { position: absolute; top: 15px; right: 15px; background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight:bold;}
         .btn-delete:hover { background: #c0392b; }
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
@@ -49,114 +49,178 @@
 <body>
 
     <div class="left-panel">
-        <h2>🛠️ Gainer 产品配置与 SKU 生成</h2>
-        <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 25px;">请严格按照步骤选择，系统将自动过滤不匹配的选项并生成精准 SKU。</p>
+        <h2>🛠️ Gainer 产品配置与 SKU 引擎 (全量数据)</h2>
+        <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 25px;">已载入 3月17日 完整资料库。互斥规则已生效。</p>
 
         <div class="step-box" id="step1">
-            <div class="step-title">1. 选择框架型号</div>
-            <select id="sel_frame" onchange="unlockStep2()">
-                <option value="">-- 请选择 --</option>
-                <option value="GM090">GM090 (极窄门)</option>
-                <option value="GM004">GM004 (极简门)</option>
-            </select>
+            <div class="step-title">1. 选择框架型号 (共 18 款)</div>
+            <select id="sel_frame" onchange="unlockStep2()"></select>
         </div>
 
         <div class="step-box disabled" id="step2">
-            <div class="step-title">2. 选择表面工艺与颜色</div>
+            <div class="step-title">2. 选择表面工艺与颜色 (绝对互斥)</div>
             <div class="radio-group" onchange="updateColors()">
-                <input type="radio" id="f_ano" name="finish_type" value="anodized"><label for="f_ano">氧化</label>
-                <input type="radio" id="f_ps" name="finish_type" value="powder_skin"><label for="f_ps">喷油 (肤感)</label>
-                <input type="radio" id="f_pm" name="finish_type" value="powder_metal"><label for="f_pm">喷油 (金属)</label>
+                <input type="radio" id="f_ano" name="finish_type" value="anodized"><label for="f_ano">氧化 (13色)</label>
+                <input type="radio" id="f_ps" name="finish_type" value="powder_skin"><label for="f_ps">喷油·肤感 (13色)</label>
+                <input type="radio" id="f_pm" name="finish_type" value="powder_metal"><label for="f_pm">喷油·金属 (26色)</label>
             </div>
             <select id="sel_color" disabled onchange="unlockStep4()">
-                <option value="">-- 请先选择上方工艺 --</option>
+                <option value="">-- 请先选择上方工艺大类 --</option>
             </select>
         </div>
 
         <div class="step-box disabled" id="step4">
-            <div class="step-title">3. 选择门芯填充物大类</div>
+            <div class="step-title">3. 选择门芯填充物大类 (绝对互斥)</div>
             <div class="radio-group" onchange="showInfillDetails()">
-                <input type="radio" id="i_glass" name="infill_type" value="glass"><label for="i_glass">玻璃</label>
-                <input type="radio" id="i_wood" name="infill_type" value="wood"><label for="i_wood">木板</label>
-                <input type="radio" id="i_leather" name="infill_type" value="leather"><label for="i_leather">皮革</label>
-                <input type="radio" id="i_rock" name="infill_type" value="rock"><label for="i_rock">岩板</label>
+                <input type="radio" id="i_glass" name="infill_type" value="glass"><label for="i_glass">玻璃 (44款)</label>
+                <input type="radio" id="i_wood" name="infill_type" value="wood"><label for="i_wood">木板 (15款)</label>
+                <input type="radio" id="i_leather" name="infill_type" value="leather"><label for="i_leather">皮革 (13款)</label>
+                <input type="radio" id="i_rock" name="infill_type" value="rock"><label for="i_rock">岩板 (23款)</label>
             </div>
 
             <div id="panel_glass" class="dynamic-section">
-                <label>选择玻璃类型 (含工艺编号)：</label>
-                <select id="glass_type" onchange="updateGlassThickness()">
-                    <option value="">-- 选择玻璃 --</option>
-                    <option value="G01|NONE|3,4,5,8">超白玻璃 [编号:G01] (无特殊工艺)</option>
-                    <option value="G02|P0102|4+4,5+5">超白单面玉砂夹胶 [编号:G02] [工艺:P0102]</option>
-                </select>
-                <label style="margin-top:10px; display:block;">选择厚度：</label>
+                <label>选择玻璃类型 (自动匹配工艺编号)：</label>
+                <select id="glass_type" onchange="updateGlassThickness()"></select>
+                <label style="margin-top:10px; display:block;">选择厚度参数 (必须)：</label>
                 <select id="glass_thick" disabled><option value="">-- 请先选择玻璃 --</option></select>
                 <label style="margin-top:10px; display:block;">是否需要丝印？</label>
                 <select id="glass_silk">
-                    <option value="N">否 (No)</option>
-                    <option value="Y">是 (Yes)</option>
+                    <option value="N">否 (No Silk-screen)</option>
+                    <option value="Y">是 (Yes Silk-screen)</option>
                 </select>
             </div>
 
             <div id="panel_wood" class="dynamic-section">
-                <label>选择木板颜色：</label>
-                <select id="wood_type">
-                    <option value="O7AR">O7AR</option>
-                    <option value="FA84">FA84</option>
-                </select>
+                <label>选择木板色号：</label>
+                <select id="wood_type" onchange="updateWoodThickness()"></select>
                 <label style="margin-top:10px; display:block;">选择木板厚度：</label>
-                <select id="wood_thick">
-                    <option value="8mm">8mm</option>
-                    <option value="18mm">18mm</option>
-                    <option value="25mm">25mm</option>
-                </select>
+                <select id="wood_thick" disabled><option value="">-- 请先选择木板色号 --</option></select>
             </div>
 
             <div id="panel_leather" class="dynamic-section">
                 <label>选择皮号：</label>
-                <select id="leather_type">
-                    <option value="H64144">H64144</option>
-                    <option value="H64151">H64151</option>
-                </select>
-                <label style="margin-top:10px; display:block;">皮革厚度 (默认)：</label>
-                <input type="text" id="leather_thick" value="1mm" disabled>
+                <select id="leather_type"></select>
+                <label style="margin-top:10px; display:block;">皮革厚度 (固定)：</label>
+                <input type="text" id="leather_thick" value="1mm" disabled style="background:#f1f1f1;">
             </div>
 
             <div id="panel_rock" class="dynamic-section">
                 <label>选择岩板花色：</label>
-                <select id="rock_type">
-                    <option value="Silk_blanco">丝绸白色 (Silk_blanco)</option>
-                    <option value="Amaranto_natural">咖啡红 (Amaranto_natural)</option>
-                </select>
+                <select id="rock_type" onchange="updateRockThickness()"></select>
                 <label style="margin-top:10px; display:block;">选择岩板厚度：</label>
-                <select id="rock_thick">
-                    <option value="4mm">4mm</option>
-                    <option value="6mm">6mm</option>
-                </select>
+                <select id="rock_thick" disabled><option value="">-- 请先选择岩板花色 --</option></select>
             </div>
         </div>
 
-        <button class="btn-generate" onclick="generateSKU()">➕ 生成专属 SKU 并加入清单</button>
+        <button class="btn-generate" onclick="generateSKU()">➕ 生成专属 SKU 并进入报价单</button>
     </div>
 
     <div class="right-panel">
         <h2>📋 客户意向/报价配置清单</h2>
-        <p style="font-size: 13px; color: #95a5a6; margin-bottom: 20px;">这里显示已生成的严密逻辑 SKU，供直接复制给财务报价或工厂排单。</p>
+        <p style="font-size: 13px; color: #95a5a6; margin-bottom: 20px;">配置好的参数都在这里。SKU 唯一，白话文清晰。发给工厂或客户绝不会乱。</p>
         
         <div id="cart_container">
-            <p id="empty_cart" style="color: #7f8c8d; text-align: center; margin-top: 50px;">清单空空如也。请在左侧配置。</p>
+            <p id="empty_cart" style="color: #7f8c8d; text-align: center; margin-top: 50px;">清单空空如也。请在左侧开始您的配置。</p>
         </div>
     </div>
 
 <script>
-    // 简化的颜色数据库 (带编号)
-    const colorDB = {
-        "anodized": [ {name: "喷细砂亚黑", code: "YPF01"}, {name: "喷细砂银白", code: "YPC03"} ],
-        "powder_skin": [ {name: "极光白", code: "PAE06"}, {name: "埃及米", code: "PAM02"} ],
-        "powder_metal": [ {name: "高光白", code: "PAE02"}, {name: "轻奢金", code: "PAB09"} ]
+    // --- 完整注入 3月17日 的全部数据库 ---
+    const DB = {
+      "frames": ["GM004", "GM090", "GM023", "MK118", "MK336", "GM054", "MK162", "GM106", "MK169", "MK073", "GM073", "GM074", "GM097", "GM072", "MK304", "GM100", "GM043", "GM094"],
+      "colors": {
+        "anodized": [{"name": "喷细砂亚黑", "code": "YPF01"}, {"name": "喷细砂银白", "code": "YPC03"}, {"name": "喷细砂罗马灰", "code": "YPD02"}, {"name": "拉丝铁灰", "code": "YLR07"}, {"name": "拉丝青香槟", "code": "YLJ08"}, {"name": "拉丝古铜", "code": "YLN06"}, {"name": "喷细砂古铜", "code": "YPN03"}, {"name": "喷细砂青香槟", "code": "YPJ06"}, {"name": "拉丝亚黑", "code": "YLF01"}, {"name": "拉丝轻奢金", "code": "YLB09"}, {"name": "拉丝亮黑", "code": "YLF03"}, {"name": "拉丝银白", "code": "YLC03"}, {"name": "拉丝罗马灰", "code": "YLD04"}],
+        "powder_skin": [{"name": "极光白", "code": "PAE06"}, {"name": "埃及米", "code": "PAM02"}, {"name": "伦敦灰", "code": "PAD21"}, {"name": "罗马灰", "code": "PAD30"}, {"name": "汉密尔顿钢", "code": "PAD26"}, {"name": "科斯白", "code": "PAE09"}, {"name": "渥太华卡其", "code": "PAJ14"}, {"name": "湖水绿", "code": "PAI02"}, {"name": "巴西可可", "code": "PAD22"}, {"name": "火山尘灰", "code": "PAD28"}, {"name": "斋浦尔红", "code": "PAU03"}, {"name": "摩洛哥蓝", "code": "PAAA02"}, {"name": "哑光黑", "code": "PAF09"}],
+        "powder_metal": [{"name": "高光白", "code": "PAE02"}, {"name": "亚黑", "code": "PAF01"}, {"name": "轻奢金", "code": "PAB09"}, {"name": "轻奢铜", "code": "PAN07"}, {"name": "香槟金", "code": "PAJ04"}, {"name": "汉密尔顿钢", "code": "PAD29"}, {"name": "青铜金", "code": "PAN04"}, {"name": "火山灰", "code": "PAD16"}, {"name": "闪银咖", "code": "PAO01"}, {"name": "中国红", "code": "PAU01"}, {"name": "奶油米", "code": "PAD18"}, {"name": "淡云金", "code": "PAD24"}, {"name": "古铜金", "code": "PAN03"}, {"name": "铁灰", "code": "PAR01"}, {"name": "石墨灰", "code": "PAD17"}, {"name": "水泥灰", "code": "PAD06"}, {"name": "香槟粉金", "code": "PAJ13"}, {"name": "香槟咖金", "code": "PAJ05"}, {"name": "香槟青金", "code": "PAJ02"}, {"name": "钛金灰", "code": "PAD09"}, {"name": "冰川灰", "code": "PAD10"}, {"name": "轻奢咖", "code": "PAN05"}, {"name": "布鲁斯蓝", "code": "PAAA01"}, {"name": "可可红", "code": "PAY02"}, {"name": "阿拉斯加金", "code": "PAD11"}, {"name": "沙滩金", "code": "PAD12"}]
+      },
+      "infill": {
+        "glass": [
+            {"name": "超白玻璃", "code": "G01", "process": "NONE", "thickness": "3,4,5,8"},
+            {"name": "超白单面玉砂夹胶玻璃", "code": "G02", "process": "P0102", "thickness": "4+4,5+5"},
+            {"name": "超白双面玉砂玻璃", "code": "G03", "process": "P01", "thickness": "4"},
+            {"name": "超白夹丝玻璃 (FB-4-1)", "code": "G04", "process": "P03", "thickness": "4+4,4+5,5+5"},
+            {"name": "超白单面玉砂夹丝玻璃 (FB-4-1)", "code": "G05", "process": "P0103", "thickness": "4+4,5+5"},
+            {"name": "超白夹丝玻璃 (14灰)", "code": "G06", "process": "P03", "thickness": "4+4,5+5"},
+            {"name": "超白夹丝玻璃 (CH-709大银网)", "code": "G07", "process": "P03", "thickness": "4+4,5+5"},
+            {"name": "超白单面玉砂夹丝玻璃 (6-709大银网)", "code": "G08", "process": "P0103", "thickness": "4+4,5+5"},
+            {"name": "超白小灯芯", "code": "G09", "process": "P04", "thickness": "5"},
+            {"name": "超白长虹", "code": "G10", "process": "P04", "thickness": "5"},
+            {"name": "超白水晶", "code": "G11", "process": "P04", "thickness": "5"},
+            {"name": "黑色条纹玻璃", "code": "G12", "process": "P04", "thickness": "5"},
+            {"name": "超白水纹", "code": "G13", "process": "P04", "thickness": "5"},
+            {"name": "玉麒麟", "code": "G14", "process": "P04", "thickness": "5"},
+            {"name": "超白银玻", "code": "G15", "process": "P04", "thickness": "5"},
+            {"name": "丝印玻璃", "code": "G16", "process": "P05", "thickness": "5"},
+            {"name": "祥云丝印玻璃", "code": "G17", "process": "P05", "thickness": "5"},
+            {"name": "超白喷漆长虹", "code": "G18", "process": "P06", "thickness": "5"},
+            {"name": "六角竹编青", "code": "G19", "process": "P04", "thickness": "4+4"},
+            {"name": "超白单面高透油砂玻璃 (亚光黑)", "code": "G20", "process": "P0708", "thickness": "4"},
+            {"name": "超白单面高透油砂玻璃 (摩洛哥蓝)", "code": "G21", "process": "P0708", "thickness": "4"},
+            {"name": "超白单面高透油砂玻璃 (伦敦灰)", "code": "G22", "process": "P0708", "thickness": "4"},
+            {"name": "超白单面高透油砂玻璃 (斋普尔红)", "code": "G23", "process": "P0708", "thickness": "4"},
+            {"name": "超白单面高透油砂玻璃 (极光白)", "code": "G24", "process": "P0708", "thickness": "4"},
+            {"name": "超白夹丝玻璃 (B-12金)", "code": "G25", "process": "P0304", "thickness": "4+4,4+5,5+5"},
+            {"name": "超白夹丝玻璃 (15800)", "code": "G26", "process": "P03", "thickness": "4+4,4+5,5+5"},
+            {"name": "欧洲灰夹丝玻璃 (B-14灰)", "code": "G27", "process": "P03", "thickness": "4+4"},
+            {"name": "超白单面玉砂夹丝玻璃 (Y08-3)", "code": "G28", "process": "P0103", "thickness": "4+4"},
+            {"name": "超白镀膜玻璃", "code": "G29", "process": "P08", "thickness": "5"},
+            {"name": "灰茶玻璃", "code": "G30", "process": "NONE", "thickness": "4,5"},
+            {"name": "金茶玻璃", "code": "G31", "process": "NONE", "thickness": "4,5"},
+            {"name": "金茶镀膜玻璃", "code": "G32", "process": "NONE", "thickness": "5"},
+            {"name": "欧洲灰玻璃", "code": "G33", "process": "NONE", "thickness": "4,5,8"},
+            {"name": "欧洲灰双面玉砂玻璃", "code": "G34", "process": "P01", "thickness": "4"},
+            {"name": "欧洲灰双面玉砂夹胶玻璃", "code": "G35", "process": "P0102", "thickness": "4+4"},
+            {"name": "通透黑玻璃", "code": "G36", "process": "NONE", "thickness": "4"},
+            {"name": "超白丝印罗马灰玻璃", "code": "G37", "process": "P05", "thickness": "4,5"},
+            {"name": "灰玻丝印罗马灰玻璃", "code": "G38", "process": "P05", "thickness": "4,5"},
+            {"name": "超白镀膜丝印罗马灰玻璃", "code": "G39", "process": "P0508", "thickness": "5"},
+            {"name": "超白丝印古铜色玻璃", "code": "G40", "process": "P05", "thickness": "3,4,5"},
+            {"name": "灰玻丝印古铜色玻璃", "code": "G41", "process": "P05", "thickness": "4,5"},
+            {"name": "金茶镀膜丝印古铜色玻璃", "code": "G42", "process": "P0508", "thickness": "5"},
+            {"name": "超白丝印黄铜色玻璃", "code": "G43", "process": "P05", "thickness": "3,4,5"},
+            {"name": "灰玻丝印黄铜色玻璃", "code": "G44", "process": "P05", "thickness": "4,5"}
+        ],
+        "wood": [{"code": "O7AR", "thickness": "8,18,25"}, {"code": "S154", "thickness": "12,18,25,35"}, {"code": "FA84", "thickness": "18"}, {"code": "LS14", "thickness": "12,18,25,35"}, {"code": "S133", "thickness": "18"}, {"code": "75V", "thickness": "12,18,25"}, {"code": "F641", "thickness": "18"}, {"code": "FC18", "thickness": "18"}, {"code": "036W", "thickness": "8,18,25"}, {"code": "UA92", "thickness": "18"}, {"code": "U727", "thickness": "12,18,25"}, {"code": "P204", "thickness": "18"}, {"code": "C351", "thickness": "8,18,25"}, {"code": "C028", "thickness": "8,18,25"}, {"code": "P205", "thickness": "18"}],
+        "leather": [{"code": "H64144"}, {"code": "H64148"}, {"code": "H64151"}, {"code": "H64160"}, {"code": "H76008"}, {"code": "H76009"}, {"code": "B76009"}, {"code": "H76014"}, {"code": "B76014"}, {"code": "H76015"}, {"code": "B76015"}, {"code": "H76016"}, {"code": "B76016"}],
+        "rock": [{"code": "Silk_blanco 丝绸白色", "thickness": "4,6"}, {"code": "Silk_vison 丝绸深驼色", "thickness": "4,6"}, {"code": "Amaranto_natural 咖啡红", "thickness": "4,6"}, {"code": "Muschio_natural 橄榄绿", "thickness": "4,6"}, {"code": "Syros 锡罗斯", "thickness": "4,6"}, {"code": "Larsen 冰崖", "thickness": "4,6"}, {"code": "Storm 风暴", "thickness": "4,6"}, {"code": "Azalai 阿扎莱", "thickness": "4,6"}, {"code": "Iseo 伊西欧", "thickness": "4,6"}, {"code": "Jasper 贾斯伯", "thickness": "4,6"}, {"code": "Fusion 聚变", "thickness": "6"}, {"code": "Masai 马赛", "thickness": "4,6"}, {"code": "哑面雪域白", "thickness": "6,12"}, {"code": "浅灰坯哑面长城灰·锌灰", "thickness": "3.5"}, {"code": "卡其坯哑面敦煌黄·砂色", "thickness": "3.5"}, {"code": "墨绿坯哑面竹海绿·黛绿", "thickness": "3.5"}, {"code": "哑面暮雪白", "thickness": "3.5,6,12"}, {"code": "墨绿坯亮面青岚", "thickness": "6,12"}, {"code": "哑面墨白", "thickness": "6,12"}, {"code": "哑面火山岩", "thickness": "3.5,6,12"}, {"code": "哑面风暴黑", "thickness": "6,12"}, {"code": "哑面米白", "thickness": "3.5"}, {"code": "哑面咖啡色", "thickness": "3.5"}]
+      }
     };
 
     let cartList = [];
+
+    // 初始化页面，填充全局下拉数据
+    window.onload = function() {
+        // 1. 填框架
+        const fSel = document.getElementById('sel_frame');
+        fSel.innerHTML = '<option value="">-- 请选择 --</option>';
+        DB.frames.forEach(f => fSel.add(new Option(f, f)));
+
+        // 2. 填玻璃
+        const gSel = document.getElementById('glass_type');
+        gSel.innerHTML = '<option value="">-- 选择玻璃类型 --</option>';
+        DB.infill.glass.forEach(g => {
+            // value格式: G01|NONE|3,4,5,8
+            gSel.add(new Option(`${g.name} [编号:${g.code}] [工艺:${g.process}]`, `${g.code}|${g.process}|${g.thickness}|${g.name}`));
+        });
+
+        // 3. 填木板
+        const wSel = document.getElementById('wood_type');
+        wSel.innerHTML = '<option value="">-- 选择木板色号 --</option>';
+        DB.infill.wood.forEach(w => wSel.add(new Option(`色号: ${w.code}`, `${w.code}|${w.thickness}`)));
+
+        // 4. 填皮革
+        const lSel = document.getElementById('leather_type');
+        lSel.innerHTML = '<option value="">-- 选择皮革编号 --</option>';
+        DB.infill.leather.forEach(l => lSel.add(new Option(`皮号: ${l.code}`, l.code)));
+
+        // 5. 填岩板
+        const rSel = document.getElementById('rock_type');
+        rSel.innerHTML = '<option value="">-- 选择岩板花色 --</option>';
+        DB.infill.rock.forEach(r => {
+            let cleanCode = r.code.replace("_x0001_", " "); // 清理Excel怪异字符
+            rSel.add(new Option(cleanCode, `${cleanCode}|${r.thickness}`));
+        });
+    }
 
     function unlockStep2() {
         if(document.getElementById('sel_frame').value !== "") {
@@ -164,15 +228,16 @@
         }
     }
 
+    // 绝对互斥工艺颜色选择
     function updateColors() {
         const type = document.querySelector('input[name="finish_type"]:checked').value;
         const colorSel = document.getElementById('sel_color');
         colorSel.innerHTML = '<option value="">-- 请选择具体颜色 --</option>';
         colorSel.disabled = false;
         
-        colorDB[type].forEach(c => {
+        DB.colors[type].forEach(c => {
             let opt = document.createElement('option');
-            opt.value = `${c.name}|${c.code}`; // 把名称和编号组合传递
+            opt.value = `${c.name}|${c.code}`; // 传名+码
             opt.innerHTML = `${c.name} [编号: ${c.code}]`;
             colorSel.appendChild(opt);
         });
@@ -184,7 +249,7 @@
         }
     }
 
-    // 处理门芯材料的互斥显示
+    // 处理门芯大类的绝对互斥显示
     function showInfillDetails() {
         const panels = ['panel_glass', 'panel_wood', 'panel_leather', 'panel_rock'];
         panels.forEach(p => document.getElementById(p).classList.remove('active'));
@@ -193,38 +258,50 @@
         document.getElementById(`panel_${type}`).classList.add('active');
     }
 
-    // 动态处理玻璃的厚度联动
+    // 联动提取分离厚度
     function updateGlassThickness() {
-        const glassVal = document.getElementById('glass_type').value; // 格式: G02|P0102|4+4,5+5
+        const val = document.getElementById('glass_type').value; 
         const thickSel = document.getElementById('glass_thick');
         thickSel.innerHTML = '<option value="">-- 请选择厚度 --</option>';
-        
-        if(glassVal !== "") {
+        if(val) {
             thickSel.disabled = false;
-            let thickOptions = glassVal.split('|')[2].split(','); // 提取厚度数组
-            thickOptions.forEach(t => {
-                let opt = document.createElement('option');
-                opt.value = t + "mm"; opt.innerHTML = t + "mm";
-                thickSel.appendChild(opt);
-            });
+            val.split('|')[2].split(',').forEach(t => thickSel.add(new Option(t + "mm", t + "mm")));
         } else { thickSel.disabled = true; }
     }
 
-    // 核心：生成并渲染 SKU
+    function updateWoodThickness() {
+        const val = document.getElementById('wood_type').value; 
+        const thickSel = document.getElementById('wood_thick');
+        thickSel.innerHTML = '<option value="">-- 请选择厚度 --</option>';
+        if(val) {
+            thickSel.disabled = false;
+            val.split('|')[1].split(',').forEach(t => thickSel.add(new Option(t + "mm", t + "mm")));
+        } else { thickSel.disabled = true; }
+    }
+
+    function updateRockThickness() {
+        const val = document.getElementById('rock_type').value; 
+        const thickSel = document.getElementById('rock_thick');
+        thickSel.innerHTML = '<option value="">-- 请选择厚度 --</option>';
+        if(val) {
+            thickSel.disabled = false;
+            val.split('|')[1].split(',').forEach(t => thickSel.add(new Option(t + "mm", t + "mm")));
+        } else { thickSel.disabled = true; }
+    }
+
+    // 🚀 终极 SKU 生成引擎
     function generateSKU() {
-        // 1. 获取框架与颜色数据
         const frame = document.getElementById('sel_frame').value;
         if(!frame) { alert("请选择框架！"); return; }
         
         const finishRadio = document.querySelector('input[name="finish_type"]:checked');
-        if(!finishRadio) { alert("请选择表面工艺！"); return; }
+        if(!finishRadio) { alert("请选择表面工艺大类！"); return; }
         const colorVal = document.getElementById('sel_color').value;
         if(!colorVal) { alert("请选择具体颜色！"); return; }
         
         const c_name = colorVal.split('|')[0];
         const c_code = colorVal.split('|')[1];
 
-        // 2. 获取互斥的门芯数据
         const infillRadio = document.querySelector('input[name="infill_type"]:checked');
         if(!infillRadio) { alert("请选择门芯填充物大类！"); return; }
         const infillType = infillRadio.value;
@@ -236,51 +313,51 @@
             const g_val = document.getElementById('glass_type').value;
             const g_thick = document.getElementById('glass_thick').value;
             const g_silk = document.getElementById('glass_silk').value;
-            if(!g_val || !g_thick) { alert("请完善玻璃规格！"); return; }
+            if(!g_val || !g_thick) { alert("请完善玻璃配置 (类型和厚度必选)！"); return; }
             
             const g_code = g_val.split('|')[0];
-            const g_process = g_val.split('|')[1]; // P0102 或 NONE
+            const g_process = g_val.split('|')[1];
+            const g_name = g_val.split('|')[3];
             
-            infillDesc = `玻璃：${g_code} / 厚度:${g_thick} / 工艺编号:${g_process} / 丝印:${g_silk==='Y'?'是':'否'}`;
-            infillSKUPart = `${g_code}-${g_process}-${g_thick}-Silk${g_silk}`;
+            infillDesc = `玻璃分类：${g_name} [${g_code}]<br>工艺：${g_process} / 厚度：${g_thick} / 需丝印：${g_silk==='Y'?'是(Yes)':'否(No)'}`;
+            infillSKUPart = `${g_code}-${g_process}-${g_thick}-S${g_silk}`;
         } 
         else if(infillType === 'wood') {
-            const w_code = document.getElementById('wood_type').value;
+            const w_val = document.getElementById('wood_type').value;
             const w_thick = document.getElementById('wood_thick').value;
-            infillDesc = `木板：编号 ${w_code} / 厚度:${w_thick}`;
+            if(!w_val || !w_thick) { alert("请完善木板配置！"); return; }
+            const w_code = w_val.split('|')[0];
+            infillDesc = `填充材质：木板<br>色号：${w_code} / 选定厚度：${w_thick}`;
             infillSKUPart = `WD-${w_code}-${w_thick}`;
         }
         else if(infillType === 'leather') {
             const l_code = document.getElementById('leather_type').value;
-            infillDesc = `皮革：编号 ${l_code} / 厚度:1mm`;
+            if(!l_code) { alert("请选择皮革编号！"); return; }
+            infillDesc = `填充材质：皮革<br>皮号：${l_code} / 厚度：固定 1mm`;
             infillSKUPart = `LT-${l_code}-1mm`;
         }
         else if(infillType === 'rock') {
-            const r_code = document.getElementById('rock_type').value;
+            const r_val = document.getElementById('rock_type').value;
             const r_thick = document.getElementById('rock_thick').value;
-            infillDesc = `岩板：编号 ${r_code} / 厚度:${r_thick}`;
+            if(!r_val || !r_thick) { alert("请完善岩板配置！"); return; }
+            const r_code = r_val.split('|')[0];
+            infillDesc = `填充材质：岩板<br>花色：${r_code} / 选定厚度：${r_thick}`;
             infillSKUPart = `RK-${r_code}-${r_thick}`;
         }
 
-        // 3. 拼接最终 SKU (格式：框架-颜色编号-填充物全属性)
+        // 核心：组装最终 SKU 码
         const finalSKU = `${frame}-${c_code}-${infillSKUPart}`;
-        const finalDesc = `框架：${frame} | 颜色：${c_name} | ${infillDesc}`;
+        const finalDesc = `<b>[${frame}]</b> 门框系统<br>颜色工艺：${c_name} [${c_code}]<br>${infillDesc}`;
 
-        // 加入数组并渲染
         cartList.push({ sku: finalSKU, desc: finalDesc, id: Date.now() });
         renderCart();
-        
-        // 可选：重置表单方便下一次录入
-        // document.getElementById('sel_frame').value = "";
-        // document.getElementById('step2').classList.add('disabled');
-        // document.getElementById('step4').classList.add('disabled');
     }
 
-    // 渲染右侧清单
+    // 渲染右侧报价清单
     function renderCart() {
         const container = document.getElementById('cart_container');
         if(cartList.length === 0) {
-            container.innerHTML = '<p id="empty_cart" style="color: #7f8c8d; text-align: center; margin-top: 50px;">清单空空如也。请在左侧配置。</p>';
+            container.innerHTML = '<p id="empty_cart" style="color: #7f8c8d; text-align: center; margin-top: 50px;">清单空空如也。请在左侧开始您的配置。</p>';
             return;
         }
 
@@ -288,7 +365,7 @@
         cartList.forEach(item => {
             html += `
                 <div class="cart-item">
-                    <button class="btn-delete" onclick="deleteItem(${item.id})">❌ 删除/回撤</button>
+                    <button class="btn-delete" onclick="deleteItem(${item.id})">❌ 删除记录</button>
                     <div class="sku-code">${item.sku}</div>
                     <div class="sku-desc">${item.desc}</div>
                 </div>
@@ -297,7 +374,7 @@
         container.innerHTML = html;
     }
 
-    // 删除单条数据
+    // 删除单条 SKU 记录 (回撤功能)
     function deleteItem(id) {
         cartList = cartList.filter(item => item.id !== id);
         renderCart();
