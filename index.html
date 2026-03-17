@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gainer SKU Builder (Bilingual)</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #3498db; --bg: #f4f7f6; --border: #ddd; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* 布局 */
+        .left-panel { width: 60%; background: #fff; padding: 20px; overflow-y: auto; border-right: 1px solid var(--border); box-shadow: 2px 0 10px rgba(0,0,0,0.05); position: relative; }
+        .right-panel { width: 40%; background: #1e1e1e; color: #d4d4d4; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+        
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        h2, h3 { color: var(--primary); margin-top: 0; margin-bottom: 0; }
+        .right-panel h2 { color: #fff; }
+        
+        /* 双语切换按钮 */
+        .btn-lang { background: #f39c12; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-lang:hover { background: #e67e22; transform: scale(1.05); }
+
+        /* 表单控件 */
+        .frame-selector { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--accent); }
+        select { padding: 10px; font-size: 16px; width: 300px; border-radius: 4px; border: 1px solid #ccc; }
+        
+        /* 分类区块 */
+        .category-box { border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .category-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 10px; }
+        .category-header h3 { margin: 0; font-size: 16px; color: #333; }
+        .btn-mini { background: #eee; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-mini:hover { background: #ddd; }
+        
+        /* Checkbox 网格 */
+        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+        .checkbox-item { display: flex; align-items: flex-start; font-size: 13px; color: #555; }
+        .checkbox-item input { margin-right: 8px; margin-top: 3px; cursor: pointer; }
+        
+        /* 动作按钮 */
+        .actions { display: flex; gap: 15px; position: sticky; bottom: 0; background: rgba(255,255,255,0.9); padding: 15px 0; border-top: 1px solid var(--border); margin-top: 20px; }
+        .btn { padding: 12px 25px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px; transition: 0.2s; }
+        .btn-save { background: var(--accent); color: white; }
+        .btn-save:hover { background: #2980b9; }
+        .btn-reset { background: #e74c3c; color: white; }
+        .btn-reset:hover { background: #c0392b; }
+        
+        /* 后台代码区 */
+        pre { background: #2d2d2d; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Consolas', monospace; font-size: 13px; flex-grow: 1; margin-top: 15px; }
+        .btn-copy { background: #4CAF50; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="left-panel">
+        <div class="header-container">
+            <h2 id="title-pm">🛠️ 逻辑配置器 (PM Builder)</h2>
+            <button class="btn-lang" id="langBtn" onclick="toggleLang()">🌐 English</button>
+        </div>
+        
+        <div class="frame-selector">
+            <label><strong id="label-step1">1. 首先选择要配置的框架：</strong></label><br><br>
+            <select id="frameSelect" onchange="loadExistingData()">
+                <option value="" id="opt-default">-- 请选择框架型号 --</option>
+                </select>
+        </div>
+
+        <div id="optionsContainer" style="opacity: 0.5; pointer-events: none;">
+            <p><i id="placeholder-text">请先在上方选择一个框架，以解锁选项库...</i></p>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-save" id="btn-save" onclick="saveCurrentFrame()">💾 保存此框架逻辑 (加入右侧后台)</button>
+            <button class="btn btn-reset" id="btn-reset" onclick="resetForm()">↩️ 撤销/重置当前选项</button>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <h2 id="title-backend">📊 数据后台与链接配置 (Backend)</h2>
+        <p id="desc-backend" style="font-size: 13px; color: #aaa;">这记录了所有被配置过的框架规则链条，每一款 SKU 都有独立的数据集，方便直接拷贝给 IT 导入数据库或算价。</p>
+        <button class="btn-copy" id="btn-copy" onclick="copyJSON()">📋 一键复制全部 JSON 数据</button>
+        <pre id="jsonOutput">{
+  "Message": "暂无数据。请在左侧配置并保存。"
+}</pre>
+    </div>
+
+<script>
+    // --- 国际化双语字典 (i18n) ---
+    const i18n = {
+        zh: {
+            pageTitle: "🛠️ 逻辑配置器 (PM Builder)",
+            step1: "1. 首先选择要配置的框架：",
+            frameDefault: "-- 请选择框架型号 --",
+            placeholder: "请先在上方选择一个框架，以解锁选项库...",
+            btnSave: "💾 保存此框架逻辑 (加入右侧后台)",
+            btnReset: "↩️ 撤销/重置当前选项",
+            backendTitle: "📊 数据后台与链接配置 (Backend)",
+            backendDesc: "这记录了所有被配置过的框架规则链条，每一款 SKU 都有独立的数据集，方便直接拷贝给 IT 导入数据库或算价。",
+            btnCopy: "📋 一键复制全部 JSON 数据",
+            selectAll: "全选",
+            clearAll: "清空",
+            alertSelectFrame: "请先在顶部选择一个框架型号！",
+            alertNoCheck: "你还没有勾选任何选项！",
+            alertCopy: "✅ 后台数据已复制到剪贴板！",
+            saveSuccess: "✅ 保存成功！已同步至后台",
+            jsonEmpty: "暂无数据。请在左侧配置并保存。"
+        },
+        en: {
+            pageTitle: "🛠️ Logic Configurator (PM Builder)",
+            step1: "1. First, select a Frame Model:",
+            frameDefault: "-- Select Frame Model --",
+            placeholder: "Please select a frame above to unlock the component library...",
+            btnSave: "💾 Save Frame Logic (Sync to Backend)",
+            btnReset: "↩️ Undo / Reset Current Selection",
+            backendTitle: "📊 Backend Data & API Mapping",
+            backendDesc: "This records all configured logic chains. Each frame has an independent dataset, ready to be copied for IT database import or pricing algorithms.",
+            btnCopy: "📋 Copy All JSON Data",
+            selectAll: "Select All",
+            clearAll: "Clear",
+            alertSelectFrame: "Please select a frame model at the top first!",
+            alertNoCheck: "You haven't checked any options yet!",
+            alertCopy: "✅ Backend data copied to clipboard!",
+            saveSuccess: "✅ Saved successfully! Synced to backend.",
+            jsonEmpty: "No data yet. Please configure on the left and save."
+        }
+    };
+
+    let currentLang = 'zh';
+
+    // 自动从你上传的表格中提取的完整资料库 (带有双语标题)
+    const DB = {
+        frames: ["GM004", "GM090", "GM023", "MK118", "MK336", "GM054", "MK162", "GM106", "MK169", "MK073", "GM073", "GM074", "GM097", "GM072", "MK304", "GM100", "GM043", "GM094"],
+        categories: [
+            { id: "colors_anodized", title: { zh: "颜色 - 氧化", en: "Colors - Anodized" }, items: ["喷细砂亚黑", "喷细砂银⽩", "喷细砂罗⻢灰", "拉丝铁灰", "拉丝⻘⾹槟", "拉丝古铜", "喷细砂古铜", "喷细砂⻘⾹槟", "拉丝亚⿊", "拉丝轻奢⾦", "拉丝亮⿊", "拉丝银⽩", "拉丝罗⻢灰"] },
+            { id: "colors_powder_skin", title: { zh: "颜色 - 喷油(肤感)", en: "Colors - Powder Coated (Skin-feel)" }, items: ["极光⽩", "埃及⽶", "伦敦灰", "罗⻢灰", "汉密尔顿钢", "科斯⽩", "渥太华卡其", "湖⽔绿", "巴西可可", "⽕⼭尘灰", "斋浦尔红", "摩洛哥蓝", "哑光⿊"] },
+            { id: "colors_powder_metal", title: { zh: "颜色 - 喷油(金属)", en: "Colors - Powder Coated (Metallic)" }, items: ["⾼光⽩", "亚⿊", "轻奢⾦", "轻奢铜", "⾹槟⾦", "汉密尔顿钢", "⻘铜⾦", "⽕⼭灰", "闪银咖", "中国红", "奶油⽶", "淡云⾦", "古铜⾦", "铁灰", "⽯墨灰", "⽔泥灰", "⾹槟粉⾦", "⾹槟咖⾦", "⾹槟⻘⾦", "钛⾦灰", "冰川灰", "轻奢咖", "布鲁斯蓝", "可可红", "阿拉斯加⾦", "沙滩⾦"] },
+            { id: "glass", title: { zh: "填充物 - 玻璃", en: "Infill - Glass" }, items: ["超白玻璃", "超⽩单⾯⽟砂夹胶玻璃", "超⽩双⾯⽟砂玻璃", "超白夹丝玻璃", "超白单面玉砂夹丝玻璃", "超白小灯芯", "超白长虹", "超白水晶", "黑色条纹玻璃", "超白水纹", "玉麒麟", "超白银玻", "丝印玻璃", "祥云丝印玻璃", "超白喷漆长虹", "六角竹编青", "超白单面高透油砂玻璃", "超白镀膜玻璃", "灰茶玻璃", "金茶玻璃", "金茶镀膜玻璃", "欧洲灰玻璃", "通透黑玻璃"] },
+            { id: "leather", title: { zh: "填充物 - 皮革编号", en: "Infill - Leather (Codes)" }, items: ["H64144", "H64148", "H64151", "H64160", "H76008", "H76009", "B76009", "H76014", "B76014", "H76015", "B76015", "H76016", "B76016"] },
+            { id: "rock", title: { zh: "填充物 - 岩板", en: "Infill - Sintered Stone" }, items: ["Silk_blanco丝绸⽩⾊", "Silk_vison丝绸深驼⾊", "Amaranto_natural咖啡红", "Muschio_natural橄榄绿", "Syros锡罗斯", "Larsen冰崖", "Storm风暴", "Azalai阿扎莱", "Iseo伊西欧", "Jasper贾斯伯", "Fusion聚变", "Masai 马赛", "哑⾯雪域⽩", "哑⾯暮雪⽩", "哑⾯墨⽩", "哑⾯⽕⼭岩", "哑⾯⻛暴⿊"] },
+            { id: "wood", title: { zh: "填充物 - 木板编号", en: "Infill - Wood Veneer (Codes)" }, items: ["O7AR", "S154", "FA84", "LS14", "S133", "75V", "F641", "FC18", "036W", "UA92", "U727", "P204", "C351", "C028", "P205"] },
+            { id: "handles", title: { zh: "五金 - 拉手款式", en: "Hardware - Handles" }, items: ["MK097", "铣型拉手 (CNC Milled)", "内嵌拉手 (Integrated)", "隐门一体拉手", "EM962E_128", "GNN2769A", "GM072-2-1", "GM094-2-C1L"] },
+            { id: "hinges", title: { zh: "五金 - 铰链", en: "Hardware - Hinges" }, items: ["JL002-L/R 天地铰链", "JL006-L/R 天地铰链", "A款针式铰链配塑料封盖", "Sensys 8638i 隐藏快装较链", "百隆110°快装铰链", "RY-ZSJL-F2 针式铰链", "RY-ZSJL-G 针式铰链", "萨丽奇-CQ暗藏木门较链"] }
+        ]
+    };
+
+    let backendData = {};
+
+    window.onload = function() {
+        const frameSelect = document.getElementById('frameSelect');
+        DB.frames.forEach(frame => {
+            let opt = document.createElement('option'); opt.value = frame; opt.innerHTML = frame;
+            frameSelect.appendChild(opt);
+        });
+        renderCategories(); // 首次渲染打勾区域
+    }
+
+    // 渲染打勾分类区
+    function renderCategories() {
+        const container = document.getElementById('optionsContainer');
+        // 保存当前勾选状态，防止切换语言时丢数据
+        let currentChecks = {};
+        document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+            currentChecks[cb.value] = true;
+        });
+
+        // 仅在未选择框架时保留提示
+        if (!document.getElementById('frameSelect').value) {
+            container.innerHTML = `<p><i id="placeholder-text">${i18n[currentLang].placeholder}</i></p>`;
+        } else {
+            container.innerHTML = ''; 
+            DB.categories.forEach(cat => {
+                let box = document.createElement('div'); box.className = 'category-box';
+                let gridHtml = cat.items.map(item => `
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="${cat.id}" value="${item}" ${currentChecks[item] ? 'checked' : ''}> ${item}
+                    </label>
+                `).join('');
+
+                box.innerHTML = `
+                    <div class="category-header">
+                        <h3>${cat.title[currentLang]}</h3>
+                        <div>
+                            <button class="btn-mini" onclick="selectAll('${cat.id}', true)">${i18n[currentLang].selectAll}</button>
+                            <button class="btn-mini" onclick="selectAll('${cat.id}', false)">${i18n[currentLang].clearAll}</button>
+                        </div>
+                    </div>
+                    <div class="checkbox-grid">${gridHtml}</div>
+                `;
+                container.appendChild(box);
+            });
+        }
+    }
+
+    // 双语切换逻辑
+    function toggleLang() {
+        currentLang = currentLang === 'zh' ? 'en' : 'zh';
+        document.getElementById('langBtn').innerText = currentLang === 'zh' ? "🌐 English" : "🌐 中文";
+        
+        // 更新静态 UI 文本
+        document.getElementById('title-pm').innerText = i18n[currentLang].pageTitle;
+        document.getElementById('label-step1').innerText = i18n[currentLang].step1;
+        document.getElementById('opt-default').innerText = i18n[currentLang].frameDefault;
+        document.getElementById('btn-save').innerText = i18n[currentLang].btnSave;
+        document.getElementById('btn-reset').innerText = i18n[currentLang].btnReset;
+        document.getElementById('title-backend').innerText = i18n[currentLang].backendTitle;
+        document.getElementById('desc-backend').innerText = i18n[currentLang].backendDesc;
+        document.getElementById('btn-copy').innerText = i18n[currentLang].btnCopy;
+        
+        if (Object.keys(backendData).length === 0 && !document.getElementById('frameSelect').value) {
+            document.getElementById('jsonOutput').innerText = `{\n  "Message": "${i18n[currentLang].jsonEmpty}"\n}`;
+        }
+        
+        renderCategories(); // 重新渲染带有新语言标题的复选框区域
+    }
+
+    function loadExistingData() {
+        const frame = document.getElementById('frameSelect').value;
+        const container = document.getElementById('optionsContainer');
+        
+        if (!frame) {
+            container.style.opacity = "0.5"; container.style.pointerEvents = "none"; 
+            renderCategories(); return;
+        }
+        
+        container.style.opacity = "1"; container.style.pointerEvents = "auto";
+        renderCategories(); // 展开区域
+
+        if(backendData[frame]) {
+            const savedRules = backendData[frame];
+            for (let categoryId in savedRules) {
+                let checkboxes = document.querySelectorAll(`input[name="${categoryId}"]`);
+                checkboxes.forEach(cb => {
+                    if(savedRules[categoryId].includes(cb.value)) cb.checked = true;
+                });
+            }
+        }
+    }
+
+    function selectAll(categoryName, isChecked) {
+        document.querySelectorAll(`input[name="${categoryName}"]`).forEach(cb => cb.checked = isChecked);
+    }
+
+    function resetForm() {
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    }
+
+    function saveCurrentFrame() {
+        const frame = document.getElementById('frameSelect').value;
+        if (!frame) { alert(i18n[currentLang].alertSelectFrame); return; }
+
+        let frameLogic = {};
+        DB.categories.forEach(cat => {
+            let checkedItems = [];
+            document.querySelectorAll(`input[name="${cat.id}"]:checked`).forEach(cb => checkedItems.push(cb.value));
+            if(checkedItems.length > 0) frameLogic[cat.id] = checkedItems;
+        });
+
+        if(Object.keys(frameLogic).length === 0) { alert(i18n[currentLang].alertNoCheck); return; }
+
+        backendData[frame] = frameLogic;
+        updateBackendView();
+        
+        let btn = document.getElementById('btn-save');
+        let originalText = btn.innerHTML;
+        btn.innerHTML = i18n[currentLang].saveSuccess;
+        btn.style.background = "#27ae60";
+        setTimeout(() => { btn.innerHTML = originalText; btn.style.background = "var(--accent)"; }, 2000);
+    }
+
+    function updateBackendView() {
+        document.getElementById('jsonOutput').innerText = JSON.stringify(backendData, null, 2);
+    }
+
+    function copyJSON() {
+        const text = document.getElementById('jsonOutput').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            alert(i18n[currentLang].alertCopy);
+        });
+    }
+</script>
+</body>
+</html>
