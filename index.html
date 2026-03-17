@@ -3,279 +3,306 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gainer SKU Builder (Bilingual)</title>
+    <title>Gainer 铝框门 SKU 精准配置系统</title>
     <style>
-        :root { --primary: #2c3e50; --accent: #3498db; --bg: #f4f7f6; --border: #ddd; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
+        :root { --primary: #1a252f; --accent: #e67e22; --bg: #ecf0f1; --card: #ffffff; --border: #bdc3c7; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg); margin: 0; display: flex; height: 100vh; color: #333; }
         
-        /* 布局 */
-        .left-panel { width: 60%; background: #fff; padding: 20px; overflow-y: auto; border-right: 1px solid var(--border); box-shadow: 2px 0 10px rgba(0,0,0,0.05); position: relative; }
-        .right-panel { width: 40%; background: #1e1e1e; color: #d4d4d4; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+        /* 布局规划 */
+        .left-panel { width: 55%; background: var(--card); padding: 30px; overflow-y: auto; border-right: 1px solid var(--border); box-shadow: 2px 0 15px rgba(0,0,0,0.05); }
+        .right-panel { width: 45%; background: #2c3e50; color: #ecf0f1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
         
-        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        h2, h3 { color: var(--primary); margin-top: 0; margin-bottom: 0; }
-        .right-panel h2 { color: #fff; }
+        h2 { color: var(--primary); margin-top: 0; border-bottom: 2px solid var(--accent); padding-bottom: 10px; display: inline-block;}
+        .right-panel h2 { color: #fff; border-bottom: 2px solid var(--accent); }
         
-        /* 双语切换按钮 */
-        .btn-lang { background: #f39c12; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .btn-lang:hover { background: #e67e22; transform: scale(1.05); }
+        /* 表单与步骤容器 */
+        .step-box { background: #f8f9fa; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; transition: 0.3s; }
+        .step-box.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(100%); }
+        .step-title { font-weight: bold; font-size: 16px; margin-bottom: 15px; color: var(--primary); }
+        
+        select, input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; margin-bottom: 10px; }
+        
+        /* 互斥单选按钮 (Radio Buttons) 的美化 */
+        .radio-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
+        .radio-group label { background: #fff; border: 1px solid var(--border); padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; transition: 0.2s; flex: 1; text-align: center; }
+        .radio-group input[type="radio"] { display: none; }
+        .radio-group input[type="radio"]:checked + label { background: var(--accent); color: white; border-color: var(--accent); font-weight: bold; }
 
-        /* 表单控件 */
-        .frame-selector { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--accent); }
-        select { padding: 10px; font-size: 16px; width: 300px; border-radius: 4px; border: 1px solid #ccc; }
+        /* 动态参数区 (隐藏与显示) */
+        .dynamic-section { background: #fff; padding: 15px; border-radius: 5px; border: 1px dashed var(--accent); margin-top: 10px; display: none; }
+        .dynamic-section.active { display: block; animation: fadeIn 0.3s ease-in; }
         
-        /* 分类区块 */
-        .category-box { border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
-        .category-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 10px; }
-        .category-header h3 { margin: 0; font-size: 16px; color: #333; }
-        .btn-mini { background: #eee; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        .btn-mini:hover { background: #ddd; }
+        /* 按钮 */
+        .btn-generate { background: var(--primary); color: white; border: none; padding: 15px; width: 100%; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; margin-top: 20px;}
+        .btn-generate:hover { background: #34495e; }
         
-        /* Checkbox 网格 */
-        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
-        .checkbox-item { display: flex; align-items: flex-start; font-size: 13px; color: #555; }
-        .checkbox-item input { margin-right: 8px; margin-top: 3px; cursor: pointer; }
+        /* 右侧清单样式 */
+        .cart-item { background: #34495e; border-left: 5px solid var(--accent); padding: 15px; margin-bottom: 15px; border-radius: 4px; position: relative; }
+        .cart-item .sku-code { font-family: 'Consolas', monospace; font-size: 18px; color: #f1c40f; margin-bottom: 8px; font-weight: bold; word-break: break-all;}
+        .cart-item .sku-desc { font-size: 14px; color: #bdc3c7; line-height: 1.5; }
+        .btn-delete { position: absolute; top: 15px; right: 15px; background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; }
+        .btn-delete:hover { background: #c0392b; }
         
-        /* 动作按钮 */
-        .actions { display: flex; gap: 15px; position: sticky; bottom: 0; background: rgba(255,255,255,0.9); padding: 15px 0; border-top: 1px solid var(--border); margin-top: 20px; }
-        .btn { padding: 12px 25px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px; transition: 0.2s; }
-        .btn-save { background: var(--accent); color: white; }
-        .btn-save:hover { background: #2980b9; }
-        .btn-reset { background: #e74c3c; color: white; }
-        .btn-reset:hover { background: #c0392b; }
-        
-        /* 后台代码区 */
-        pre { background: #2d2d2d; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Consolas', monospace; font-size: 13px; flex-grow: 1; margin-top: 15px; }
-        .btn-copy { background: #4CAF50; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div class="left-panel">
-        <div class="header-container">
-            <h2 id="title-pm">🛠️ 逻辑配置器 (PM Builder)</h2>
-            <button class="btn-lang" id="langBtn" onclick="toggleLang()">🌐 English</button>
+        <h2>🛠️ Gainer 产品配置与 SKU 生成</h2>
+        <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 25px;">请严格按照步骤选择，系统将自动过滤不匹配的选项并生成精准 SKU。</p>
+
+        <div class="step-box" id="step1">
+            <div class="step-title">1. 选择框架型号</div>
+            <select id="sel_frame" onchange="unlockStep2()">
+                <option value="">-- 请选择 --</option>
+                <option value="GM090">GM090 (极窄门)</option>
+                <option value="GM004">GM004 (极简门)</option>
+            </select>
         </div>
-        
-        <div class="frame-selector">
-            <label><strong id="label-step1">1. 首先选择要配置的框架：</strong></label><br><br>
-            <select id="frameSelect" onchange="loadExistingData()">
-                <option value="" id="opt-default">-- 请选择框架型号 --</option>
+
+        <div class="step-box disabled" id="step2">
+            <div class="step-title">2. 选择表面工艺与颜色</div>
+            <div class="radio-group" onchange="updateColors()">
+                <input type="radio" id="f_ano" name="finish_type" value="anodized"><label for="f_ano">氧化</label>
+                <input type="radio" id="f_ps" name="finish_type" value="powder_skin"><label for="f_ps">喷油 (肤感)</label>
+                <input type="radio" id="f_pm" name="finish_type" value="powder_metal"><label for="f_pm">喷油 (金属)</label>
+            </div>
+            <select id="sel_color" disabled onchange="unlockStep4()">
+                <option value="">-- 请先选择上方工艺 --</option>
+            </select>
+        </div>
+
+        <div class="step-box disabled" id="step4">
+            <div class="step-title">3. 选择门芯填充物大类</div>
+            <div class="radio-group" onchange="showInfillDetails()">
+                <input type="radio" id="i_glass" name="infill_type" value="glass"><label for="i_glass">玻璃</label>
+                <input type="radio" id="i_wood" name="infill_type" value="wood"><label for="i_wood">木板</label>
+                <input type="radio" id="i_leather" name="infill_type" value="leather"><label for="i_leather">皮革</label>
+                <input type="radio" id="i_rock" name="infill_type" value="rock"><label for="i_rock">岩板</label>
+            </div>
+
+            <div id="panel_glass" class="dynamic-section">
+                <label>选择玻璃类型 (含工艺编号)：</label>
+                <select id="glass_type" onchange="updateGlassThickness()">
+                    <option value="">-- 选择玻璃 --</option>
+                    <option value="G01|NONE|3,4,5,8">超白玻璃 [编号:G01] (无特殊工艺)</option>
+                    <option value="G02|P0102|4+4,5+5">超白单面玉砂夹胶 [编号:G02] [工艺:P0102]</option>
                 </select>
+                <label style="margin-top:10px; display:block;">选择厚度：</label>
+                <select id="glass_thick" disabled><option value="">-- 请先选择玻璃 --</option></select>
+                <label style="margin-top:10px; display:block;">是否需要丝印？</label>
+                <select id="glass_silk">
+                    <option value="N">否 (No)</option>
+                    <option value="Y">是 (Yes)</option>
+                </select>
+            </div>
+
+            <div id="panel_wood" class="dynamic-section">
+                <label>选择木板颜色：</label>
+                <select id="wood_type">
+                    <option value="O7AR">O7AR</option>
+                    <option value="FA84">FA84</option>
+                </select>
+                <label style="margin-top:10px; display:block;">选择木板厚度：</label>
+                <select id="wood_thick">
+                    <option value="8mm">8mm</option>
+                    <option value="18mm">18mm</option>
+                    <option value="25mm">25mm</option>
+                </select>
+            </div>
+
+            <div id="panel_leather" class="dynamic-section">
+                <label>选择皮号：</label>
+                <select id="leather_type">
+                    <option value="H64144">H64144</option>
+                    <option value="H64151">H64151</option>
+                </select>
+                <label style="margin-top:10px; display:block;">皮革厚度 (默认)：</label>
+                <input type="text" id="leather_thick" value="1mm" disabled>
+            </div>
+
+            <div id="panel_rock" class="dynamic-section">
+                <label>选择岩板花色：</label>
+                <select id="rock_type">
+                    <option value="Silk_blanco">丝绸白色 (Silk_blanco)</option>
+                    <option value="Amaranto_natural">咖啡红 (Amaranto_natural)</option>
+                </select>
+                <label style="margin-top:10px; display:block;">选择岩板厚度：</label>
+                <select id="rock_thick">
+                    <option value="4mm">4mm</option>
+                    <option value="6mm">6mm</option>
+                </select>
+            </div>
         </div>
 
-        <div id="optionsContainer" style="opacity: 0.5; pointer-events: none;">
-            <p><i id="placeholder-text">请先在上方选择一个框架，以解锁选项库...</i></p>
-        </div>
-
-        <div class="actions">
-            <button class="btn btn-save" id="btn-save" onclick="saveCurrentFrame()">💾 保存此框架逻辑 (加入右侧后台)</button>
-            <button class="btn btn-reset" id="btn-reset" onclick="resetForm()">↩️ 撤销/重置当前选项</button>
-        </div>
+        <button class="btn-generate" onclick="generateSKU()">➕ 生成专属 SKU 并加入清单</button>
     </div>
 
     <div class="right-panel">
-        <h2 id="title-backend">📊 数据后台与链接配置 (Backend)</h2>
-        <p id="desc-backend" style="font-size: 13px; color: #aaa;">这记录了所有被配置过的框架规则链条，每一款 SKU 都有独立的数据集，方便直接拷贝给 IT 导入数据库或算价。</p>
-        <button class="btn-copy" id="btn-copy" onclick="copyJSON()">📋 一键复制全部 JSON 数据</button>
-        <pre id="jsonOutput">{
-  "Message": "暂无数据。请在左侧配置并保存。"
-}</pre>
+        <h2>📋 客户意向/报价配置清单</h2>
+        <p style="font-size: 13px; color: #95a5a6; margin-bottom: 20px;">这里显示已生成的严密逻辑 SKU，供直接复制给财务报价或工厂排单。</p>
+        
+        <div id="cart_container">
+            <p id="empty_cart" style="color: #7f8c8d; text-align: center; margin-top: 50px;">清单空空如也。请在左侧配置。</p>
+        </div>
     </div>
 
 <script>
-    // --- 国际化双语字典 (i18n) ---
-    const i18n = {
-        zh: {
-            pageTitle: "🛠️ 逻辑配置器 (PM Builder)",
-            step1: "1. 首先选择要配置的框架：",
-            frameDefault: "-- 请选择框架型号 --",
-            placeholder: "请先在上方选择一个框架，以解锁选项库...",
-            btnSave: "💾 保存此框架逻辑 (加入右侧后台)",
-            btnReset: "↩️ 撤销/重置当前选项",
-            backendTitle: "📊 数据后台与链接配置 (Backend)",
-            backendDesc: "这记录了所有被配置过的框架规则链条，每一款 SKU 都有独立的数据集，方便直接拷贝给 IT 导入数据库或算价。",
-            btnCopy: "📋 一键复制全部 JSON 数据",
-            selectAll: "全选",
-            clearAll: "清空",
-            alertSelectFrame: "请先在顶部选择一个框架型号！",
-            alertNoCheck: "你还没有勾选任何选项！",
-            alertCopy: "✅ 后台数据已复制到剪贴板！",
-            saveSuccess: "✅ 保存成功！已同步至后台",
-            jsonEmpty: "暂无数据。请在左侧配置并保存。"
-        },
-        en: {
-            pageTitle: "🛠️ Logic Configurator (PM Builder)",
-            step1: "1. First, select a Frame Model:",
-            frameDefault: "-- Select Frame Model --",
-            placeholder: "Please select a frame above to unlock the component library...",
-            btnSave: "💾 Save Frame Logic (Sync to Backend)",
-            btnReset: "↩️ Undo / Reset Current Selection",
-            backendTitle: "📊 Backend Data & API Mapping",
-            backendDesc: "This records all configured logic chains. Each frame has an independent dataset, ready to be copied for IT database import or pricing algorithms.",
-            btnCopy: "📋 Copy All JSON Data",
-            selectAll: "Select All",
-            clearAll: "Clear",
-            alertSelectFrame: "Please select a frame model at the top first!",
-            alertNoCheck: "You haven't checked any options yet!",
-            alertCopy: "✅ Backend data copied to clipboard!",
-            saveSuccess: "✅ Saved successfully! Synced to backend.",
-            jsonEmpty: "No data yet. Please configure on the left and save."
+    // 简化的颜色数据库 (带编号)
+    const colorDB = {
+        "anodized": [ {name: "喷细砂亚黑", code: "YPF01"}, {name: "喷细砂银白", code: "YPC03"} ],
+        "powder_skin": [ {name: "极光白", code: "PAE06"}, {name: "埃及米", code: "PAM02"} ],
+        "powder_metal": [ {name: "高光白", code: "PAE02"}, {name: "轻奢金", code: "PAB09"} ]
+    };
+
+    let cartList = [];
+
+    function unlockStep2() {
+        if(document.getElementById('sel_frame').value !== "") {
+            document.getElementById('step2').classList.remove('disabled');
         }
-    };
-
-    let currentLang = 'zh';
-
-    // 自动从你上传的表格中提取的完整资料库 (带有双语标题)
-    const DB = {
-        frames: ["GM004", "GM090", "GM023", "MK118", "MK336", "GM054", "MK162", "GM106", "MK169", "MK073", "GM073", "GM074", "GM097", "GM072", "MK304", "GM100", "GM043", "GM094"],
-        categories: [
-            { id: "colors_anodized", title: { zh: "颜色 - 氧化", en: "Colors - Anodized" }, items: ["喷细砂亚黑", "喷细砂银⽩", "喷细砂罗⻢灰", "拉丝铁灰", "拉丝⻘⾹槟", "拉丝古铜", "喷细砂古铜", "喷细砂⻘⾹槟", "拉丝亚⿊", "拉丝轻奢⾦", "拉丝亮⿊", "拉丝银⽩", "拉丝罗⻢灰"] },
-            { id: "colors_powder_skin", title: { zh: "颜色 - 喷油(肤感)", en: "Colors - Powder Coated (Skin-feel)" }, items: ["极光⽩", "埃及⽶", "伦敦灰", "罗⻢灰", "汉密尔顿钢", "科斯⽩", "渥太华卡其", "湖⽔绿", "巴西可可", "⽕⼭尘灰", "斋浦尔红", "摩洛哥蓝", "哑光⿊"] },
-            { id: "colors_powder_metal", title: { zh: "颜色 - 喷油(金属)", en: "Colors - Powder Coated (Metallic)" }, items: ["⾼光⽩", "亚⿊", "轻奢⾦", "轻奢铜", "⾹槟⾦", "汉密尔顿钢", "⻘铜⾦", "⽕⼭灰", "闪银咖", "中国红", "奶油⽶", "淡云⾦", "古铜⾦", "铁灰", "⽯墨灰", "⽔泥灰", "⾹槟粉⾦", "⾹槟咖⾦", "⾹槟⻘⾦", "钛⾦灰", "冰川灰", "轻奢咖", "布鲁斯蓝", "可可红", "阿拉斯加⾦", "沙滩⾦"] },
-            { id: "glass", title: { zh: "填充物 - 玻璃", en: "Infill - Glass" }, items: ["超白玻璃", "超⽩单⾯⽟砂夹胶玻璃", "超⽩双⾯⽟砂玻璃", "超白夹丝玻璃", "超白单面玉砂夹丝玻璃", "超白小灯芯", "超白长虹", "超白水晶", "黑色条纹玻璃", "超白水纹", "玉麒麟", "超白银玻", "丝印玻璃", "祥云丝印玻璃", "超白喷漆长虹", "六角竹编青", "超白单面高透油砂玻璃", "超白镀膜玻璃", "灰茶玻璃", "金茶玻璃", "金茶镀膜玻璃", "欧洲灰玻璃", "通透黑玻璃"] },
-            { id: "leather", title: { zh: "填充物 - 皮革编号", en: "Infill - Leather (Codes)" }, items: ["H64144", "H64148", "H64151", "H64160", "H76008", "H76009", "B76009", "H76014", "B76014", "H76015", "B76015", "H76016", "B76016"] },
-            { id: "rock", title: { zh: "填充物 - 岩板", en: "Infill - Sintered Stone" }, items: ["Silk_blanco丝绸⽩⾊", "Silk_vison丝绸深驼⾊", "Amaranto_natural咖啡红", "Muschio_natural橄榄绿", "Syros锡罗斯", "Larsen冰崖", "Storm风暴", "Azalai阿扎莱", "Iseo伊西欧", "Jasper贾斯伯", "Fusion聚变", "Masai 马赛", "哑⾯雪域⽩", "哑⾯暮雪⽩", "哑⾯墨⽩", "哑⾯⽕⼭岩", "哑⾯⻛暴⿊"] },
-            { id: "wood", title: { zh: "填充物 - 木板编号", en: "Infill - Wood Veneer (Codes)" }, items: ["O7AR", "S154", "FA84", "LS14", "S133", "75V", "F641", "FC18", "036W", "UA92", "U727", "P204", "C351", "C028", "P205"] },
-            { id: "handles", title: { zh: "五金 - 拉手款式", en: "Hardware - Handles" }, items: ["MK097", "铣型拉手 (CNC Milled)", "内嵌拉手 (Integrated)", "隐门一体拉手", "EM962E_128", "GNN2769A", "GM072-2-1", "GM094-2-C1L"] },
-            { id: "hinges", title: { zh: "五金 - 铰链", en: "Hardware - Hinges" }, items: ["JL002-L/R 天地铰链", "JL006-L/R 天地铰链", "A款针式铰链配塑料封盖", "Sensys 8638i 隐藏快装较链", "百隆110°快装铰链", "RY-ZSJL-F2 针式铰链", "RY-ZSJL-G 针式铰链", "萨丽奇-CQ暗藏木门较链"] }
-        ]
-    };
-
-    let backendData = {};
-
-    window.onload = function() {
-        const frameSelect = document.getElementById('frameSelect');
-        DB.frames.forEach(frame => {
-            let opt = document.createElement('option'); opt.value = frame; opt.innerHTML = frame;
-            frameSelect.appendChild(opt);
-        });
-        renderCategories(); // 首次渲染打勾区域
     }
 
-    // 渲染打勾分类区
-    function renderCategories() {
-        const container = document.getElementById('optionsContainer');
-        // 保存当前勾选状态，防止切换语言时丢数据
-        let currentChecks = {};
-        document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-            currentChecks[cb.value] = true;
+    function updateColors() {
+        const type = document.querySelector('input[name="finish_type"]:checked').value;
+        const colorSel = document.getElementById('sel_color');
+        colorSel.innerHTML = '<option value="">-- 请选择具体颜色 --</option>';
+        colorSel.disabled = false;
+        
+        colorDB[type].forEach(c => {
+            let opt = document.createElement('option');
+            opt.value = `${c.name}|${c.code}`; // 把名称和编号组合传递
+            opt.innerHTML = `${c.name} [编号: ${c.code}]`;
+            colorSel.appendChild(opt);
         });
+    }
 
-        // 仅在未选择框架时保留提示
-        if (!document.getElementById('frameSelect').value) {
-            container.innerHTML = `<p><i id="placeholder-text">${i18n[currentLang].placeholder}</i></p>`;
-        } else {
-            container.innerHTML = ''; 
-            DB.categories.forEach(cat => {
-                let box = document.createElement('div'); box.className = 'category-box';
-                let gridHtml = cat.items.map(item => `
-                    <label class="checkbox-item">
-                        <input type="checkbox" name="${cat.id}" value="${item}" ${currentChecks[item] ? 'checked' : ''}> ${item}
-                    </label>
-                `).join('');
+    function unlockStep4() {
+        if(document.getElementById('sel_color').value !== "") {
+            document.getElementById('step4').classList.remove('disabled');
+        }
+    }
 
-                box.innerHTML = `
-                    <div class="category-header">
-                        <h3>${cat.title[currentLang]}</h3>
-                        <div>
-                            <button class="btn-mini" onclick="selectAll('${cat.id}', true)">${i18n[currentLang].selectAll}</button>
-                            <button class="btn-mini" onclick="selectAll('${cat.id}', false)">${i18n[currentLang].clearAll}</button>
-                        </div>
-                    </div>
-                    <div class="checkbox-grid">${gridHtml}</div>
-                `;
-                container.appendChild(box);
+    // 处理门芯材料的互斥显示
+    function showInfillDetails() {
+        const panels = ['panel_glass', 'panel_wood', 'panel_leather', 'panel_rock'];
+        panels.forEach(p => document.getElementById(p).classList.remove('active'));
+        
+        const type = document.querySelector('input[name="infill_type"]:checked').value;
+        document.getElementById(`panel_${type}`).classList.add('active');
+    }
+
+    // 动态处理玻璃的厚度联动
+    function updateGlassThickness() {
+        const glassVal = document.getElementById('glass_type').value; // 格式: G02|P0102|4+4,5+5
+        const thickSel = document.getElementById('glass_thick');
+        thickSel.innerHTML = '<option value="">-- 请选择厚度 --</option>';
+        
+        if(glassVal !== "") {
+            thickSel.disabled = false;
+            let thickOptions = glassVal.split('|')[2].split(','); // 提取厚度数组
+            thickOptions.forEach(t => {
+                let opt = document.createElement('option');
+                opt.value = t + "mm"; opt.innerHTML = t + "mm";
+                thickSel.appendChild(opt);
             });
+        } else { thickSel.disabled = true; }
+    }
+
+    // 核心：生成并渲染 SKU
+    function generateSKU() {
+        // 1. 获取框架与颜色数据
+        const frame = document.getElementById('sel_frame').value;
+        if(!frame) { alert("请选择框架！"); return; }
+        
+        const finishRadio = document.querySelector('input[name="finish_type"]:checked');
+        if(!finishRadio) { alert("请选择表面工艺！"); return; }
+        const colorVal = document.getElementById('sel_color').value;
+        if(!colorVal) { alert("请选择具体颜色！"); return; }
+        
+        const c_name = colorVal.split('|')[0];
+        const c_code = colorVal.split('|')[1];
+
+        // 2. 获取互斥的门芯数据
+        const infillRadio = document.querySelector('input[name="infill_type"]:checked');
+        if(!infillRadio) { alert("请选择门芯填充物大类！"); return; }
+        const infillType = infillRadio.value;
+        
+        let infillDesc = "";
+        let infillSKUPart = "";
+
+        if(infillType === 'glass') {
+            const g_val = document.getElementById('glass_type').value;
+            const g_thick = document.getElementById('glass_thick').value;
+            const g_silk = document.getElementById('glass_silk').value;
+            if(!g_val || !g_thick) { alert("请完善玻璃规格！"); return; }
+            
+            const g_code = g_val.split('|')[0];
+            const g_process = g_val.split('|')[1]; // P0102 或 NONE
+            
+            infillDesc = `玻璃：${g_code} / 厚度:${g_thick} / 工艺编号:${g_process} / 丝印:${g_silk==='Y'?'是':'否'}`;
+            infillSKUPart = `${g_code}-${g_process}-${g_thick}-Silk${g_silk}`;
+        } 
+        else if(infillType === 'wood') {
+            const w_code = document.getElementById('wood_type').value;
+            const w_thick = document.getElementById('wood_thick').value;
+            infillDesc = `木板：编号 ${w_code} / 厚度:${w_thick}`;
+            infillSKUPart = `WD-${w_code}-${w_thick}`;
         }
-    }
-
-    // 双语切换逻辑
-    function toggleLang() {
-        currentLang = currentLang === 'zh' ? 'en' : 'zh';
-        document.getElementById('langBtn').innerText = currentLang === 'zh' ? "🌐 English" : "🌐 中文";
-        
-        // 更新静态 UI 文本
-        document.getElementById('title-pm').innerText = i18n[currentLang].pageTitle;
-        document.getElementById('label-step1').innerText = i18n[currentLang].step1;
-        document.getElementById('opt-default').innerText = i18n[currentLang].frameDefault;
-        document.getElementById('btn-save').innerText = i18n[currentLang].btnSave;
-        document.getElementById('btn-reset').innerText = i18n[currentLang].btnReset;
-        document.getElementById('title-backend').innerText = i18n[currentLang].backendTitle;
-        document.getElementById('desc-backend').innerText = i18n[currentLang].backendDesc;
-        document.getElementById('btn-copy').innerText = i18n[currentLang].btnCopy;
-        
-        if (Object.keys(backendData).length === 0 && !document.getElementById('frameSelect').value) {
-            document.getElementById('jsonOutput').innerText = `{\n  "Message": "${i18n[currentLang].jsonEmpty}"\n}`;
+        else if(infillType === 'leather') {
+            const l_code = document.getElementById('leather_type').value;
+            infillDesc = `皮革：编号 ${l_code} / 厚度:1mm`;
+            infillSKUPart = `LT-${l_code}-1mm`;
         }
-        
-        renderCategories(); // 重新渲染带有新语言标题的复选框区域
-    }
-
-    function loadExistingData() {
-        const frame = document.getElementById('frameSelect').value;
-        const container = document.getElementById('optionsContainer');
-        
-        if (!frame) {
-            container.style.opacity = "0.5"; container.style.pointerEvents = "none"; 
-            renderCategories(); return;
+        else if(infillType === 'rock') {
+            const r_code = document.getElementById('rock_type').value;
+            const r_thick = document.getElementById('rock_thick').value;
+            infillDesc = `岩板：编号 ${r_code} / 厚度:${r_thick}`;
+            infillSKUPart = `RK-${r_code}-${r_thick}`;
         }
+
+        // 3. 拼接最终 SKU (格式：框架-颜色编号-填充物全属性)
+        const finalSKU = `${frame}-${c_code}-${infillSKUPart}`;
+        const finalDesc = `框架：${frame} | 颜色：${c_name} | ${infillDesc}`;
+
+        // 加入数组并渲染
+        cartList.push({ sku: finalSKU, desc: finalDesc, id: Date.now() });
+        renderCart();
         
-        container.style.opacity = "1"; container.style.pointerEvents = "auto";
-        renderCategories(); // 展开区域
+        // 可选：重置表单方便下一次录入
+        // document.getElementById('sel_frame').value = "";
+        // document.getElementById('step2').classList.add('disabled');
+        // document.getElementById('step4').classList.add('disabled');
+    }
 
-        if(backendData[frame]) {
-            const savedRules = backendData[frame];
-            for (let categoryId in savedRules) {
-                let checkboxes = document.querySelectorAll(`input[name="${categoryId}"]`);
-                checkboxes.forEach(cb => {
-                    if(savedRules[categoryId].includes(cb.value)) cb.checked = true;
-                });
-            }
+    // 渲染右侧清单
+    function renderCart() {
+        const container = document.getElementById('cart_container');
+        if(cartList.length === 0) {
+            container.innerHTML = '<p id="empty_cart" style="color: #7f8c8d; text-align: center; margin-top: 50px;">清单空空如也。请在左侧配置。</p>';
+            return;
         }
-    }
 
-    function selectAll(categoryName, isChecked) {
-        document.querySelectorAll(`input[name="${categoryName}"]`).forEach(cb => cb.checked = isChecked);
-    }
-
-    function resetForm() {
-        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-    }
-
-    function saveCurrentFrame() {
-        const frame = document.getElementById('frameSelect').value;
-        if (!frame) { alert(i18n[currentLang].alertSelectFrame); return; }
-
-        let frameLogic = {};
-        DB.categories.forEach(cat => {
-            let checkedItems = [];
-            document.querySelectorAll(`input[name="${cat.id}"]:checked`).forEach(cb => checkedItems.push(cb.value));
-            if(checkedItems.length > 0) frameLogic[cat.id] = checkedItems;
+        let html = '';
+        cartList.forEach(item => {
+            html += `
+                <div class="cart-item">
+                    <button class="btn-delete" onclick="deleteItem(${item.id})">❌ 删除/回撤</button>
+                    <div class="sku-code">${item.sku}</div>
+                    <div class="sku-desc">${item.desc}</div>
+                </div>
+            `;
         });
-
-        if(Object.keys(frameLogic).length === 0) { alert(i18n[currentLang].alertNoCheck); return; }
-
-        backendData[frame] = frameLogic;
-        updateBackendView();
-        
-        let btn = document.getElementById('btn-save');
-        let originalText = btn.innerHTML;
-        btn.innerHTML = i18n[currentLang].saveSuccess;
-        btn.style.background = "#27ae60";
-        setTimeout(() => { btn.innerHTML = originalText; btn.style.background = "var(--accent)"; }, 2000);
+        container.innerHTML = html;
     }
 
-    function updateBackendView() {
-        document.getElementById('jsonOutput').innerText = JSON.stringify(backendData, null, 2);
-    }
-
-    function copyJSON() {
-        const text = document.getElementById('jsonOutput').innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            alert(i18n[currentLang].alertCopy);
-        });
+    // 删除单条数据
+    function deleteItem(id) {
+        cartList = cartList.filter(item => item.id !== id);
+        renderCart();
     }
 </script>
+
 </body>
 </html>
